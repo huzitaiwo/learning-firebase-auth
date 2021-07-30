@@ -1,15 +1,36 @@
-// get data
-db.collection('guidez').get().then(snapshot => {
-    setupGuidez(snapshot.docs);
-})
+
 // listen for auth status changes
 auth.onAuthStateChanged(user => {
     if(user) {
-        console.log('user loged in: ', user)
+        // get data
+        db.collection('guidez').get().then(snapshot => {
+            setupGuidez(snapshot.docs);
+            setupUI(user)
+        });
     } else {
-        console.log('user loged out')
+        setupGuidez([]);
+        setupUI()
     }
 });
+
+//create new guide
+const createForm = document.querySelector('#create-form');
+createForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    db.collection('guidez').add({
+        title: createForm.title.value,
+        content: createForm.content.value
+    }).then(() => {
+        // close modal & reset form
+        const modal = document.querySelector('#modal-create');
+        M.Modal.getInstance(modal).close();
+        createForm.reset();
+    }).catch(err => {
+        console.log(err.message);
+    })
+}); 
+
 // signup
 const signupForm = document.querySelector('#signup-form');
 
